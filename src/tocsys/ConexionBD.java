@@ -19,6 +19,7 @@ public class ConexionBD {
         return DriverManager.getConnection(URL, USUARIO, CONTRASENA);
     }
 
+    
     // Método main solo para probar la conexión
     public static void main(String[] args) {
         try (Connection conexion = obtenerConexion()) {
