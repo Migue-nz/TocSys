@@ -28,4 +28,6 @@ public class ConexionBD {
             System.out.println("Error al conectar: " + e.getMessage());
         }
     }
+    
+    //ya monse
 }
