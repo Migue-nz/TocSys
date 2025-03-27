@@ -33,8 +33,10 @@ public class MenuPrincipal extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMinimumSize(new java.awt.Dimension(1003, 600));
         getContentPane().setLayout(null);
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 3, 48)); // NOI18N
@@ -56,23 +58,27 @@ public class MenuPrincipal extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTable1);
 
         getContentPane().add(jScrollPane1);
-        jScrollPane1.setBounds(220, 150, 490, 290);
+        jScrollPane1.setBounds(200, 150, 560, 290);
 
         jButton1.setText("jButton1");
         getContentPane().add(jButton1);
-        jButton1.setBounds(190, 100, 75, 23);
+        jButton1.setBounds(200, 100, 75, 23);
 
         jButton2.setText("jButton2");
         getContentPane().add(jButton2);
-        jButton2.setBounds(350, 100, 75, 23);
+        jButton2.setBounds(360, 100, 75, 23);
 
         jButton3.setText("jButton3");
         getContentPane().add(jButton3);
-        jButton3.setBounds(500, 100, 75, 23);
+        jButton3.setBounds(520, 100, 75, 23);
 
         jButton4.setText("jButton4");
         getContentPane().add(jButton4);
-        jButton4.setBounds(650, 100, 75, 23);
+        jButton4.setBounds(680, 100, 75, 23);
+
+        jButton5.setText("AGREGAR RECEPCIONSTA");
+        getContentPane().add(jButton5);
+        jButton5.setBounds(400, 460, 180, 23);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -117,6 +123,7 @@ public class MenuPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
