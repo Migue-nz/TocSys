@@ -22,22 +22,22 @@ public class RegistroInicial extends javax.swing.JFrame {
         initComponents();
     }
     
-    public void RegistroInicial(String nombreTabla) {
-        String sql = "INSERT INTO Usuario VALUES(1,"+txtNombre.getText()+","+txtContrasenia.getText()+","+;
-
-        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
-
-            if (rs.next()) {
-                int cantidad = rs.getInt(1);
-                return cantidad > 0;
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error al consultar la tabla: " + e.getMessage());
-        }
-
-        return false;
-    }
+//    public void RegistroInicial(String nombreTabla) {
+//        String sql = "INSERT INTO Usuario VALUES(1,"+txtNombre.getText()+","+txtContrasenia.getText()+","+;
+//
+//        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+//
+//            if (rs.next()) {
+//                int cantidad = rs.getInt(1);
+//                return cantidad > 0;
+//            }
+//
+//        } catch (SQLException e) {
+//            System.out.println("Error al consultar la tabla: " + e.getMessage());
+//        }
+//
+//        return false;
+//    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -159,7 +159,7 @@ public class RegistroInicial extends javax.swing.JFrame {
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
         String name = txtNombre.getText();
         String contra = txtContrasenia.getText();
-        String usu = txtUser.getText()
+        String usu = txtUser.getText();
         
         
     }//GEN-LAST:event_btnRegistrarActionPerformed
