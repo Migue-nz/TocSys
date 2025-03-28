@@ -12,10 +12,8 @@ import tocsys.ConexionBD;
  * @author migue
  */
 public class Login extends javax.swing.JFrame {
-
-    /**
-     * Creates new form Login
-     */
+String tipo ;
+    
     public Login() {
         initComponents();
     }
@@ -23,15 +21,15 @@ public class Login extends javax.swing.JFrame {
     String user = txtUsuario.getText();
     String contrasena = txtContrasena.getText();
 
-    String sql = "SELECT * FROM Usuario WHERE user = '" + user + "' AND contrasena = '" + contrasena + "'";
+    String sqlTipoUsuario = "SELECT user,tipoUsuario FROM Usuario WHERE user = '" + user + "' AND contrasena = '" + contrasena + "'";
 
     try (java.sql.Connection conn = ConexionBD.obtenerConexion();
          java.sql.Statement stmt = conn.createStatement();
-         java.sql.ResultSet rs = stmt.executeQuery(sql)) {
+         java.sql.ResultSet rs = stmt.executeQuery(sqlTipoUsuario)) {
 
         if (rs.next()) {          
-            JOptionPane.showMessageDialog(this, "¡Bienvenide " + rs.getString("nombre") + "!");                      
-            MenuPrincipal menu = new MenuPrincipal();
+            JOptionPane.showMessageDialog(this, "¡Bienvenide " + rs.getString("user") +rs.getInt("tipoUsuario") + "!");                      
+            MenuPrincipal menu = new MenuPrincipal(rs.getString("user"),rs.getInt("tipoUsuario"));
             menu.setVisible(true);
             this.dispose(); // Cierra la ventana actual
         } else {
