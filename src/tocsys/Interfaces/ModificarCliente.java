@@ -37,7 +37,7 @@ public class ModificarCliente extends javax.swing.JFrame {
         String correo = TXTCORREO.getText();
 
         // Crear la sentencia SQL UPDATE
-        String sql = "UPDATE Cliente SET nombre = '" + nombre + "', apellidos = '" + apellidos + "', "
+        String sql = "UPDATE clientes SET nombre = '" + nombre + "', apellidos = '" + apellidos + "', "
                 + "telefono = '" + telefono + "', correo = '" + correo + "' "
                 + "WHERE idCliente = " + idCliente;
 

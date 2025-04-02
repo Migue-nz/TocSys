@@ -195,7 +195,7 @@ public class RegistroCliente extends javax.swing.JFrame {
         if (TXTNOMBRE.getText() == "" || TXTAPELLIDOS.getText() == "" || TXTTELEFONO.getText() == "" || TXTCORREO.getText() == "") {
             JOptionPane.showMessageDialog(this, "NO PUEDE DEJAR CAMPOS VACIOS");
         } else {
-            RegistroCliente("Cliente");
+            RegistroCliente("clientes");
         }
 
     }//GEN-LAST:event_btnRegistrarActionPerformed

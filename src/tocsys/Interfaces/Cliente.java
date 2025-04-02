@@ -37,7 +37,7 @@ public class Cliente extends javax.swing.JFrame {
         modelo.addColumn("Telefono");
         modelo.addColumn("Correo");
 
-        try (Connection conn = ConexionBD.obtenerConexion(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT idCliente, nombre, apellidos, telefono, correo FROM Cliente")) {
+        try (Connection conn = ConexionBD.obtenerConexion(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT idCliente, nombre, apellidos, telefono, correo FROM clientes")) {
 
             while (rs.next()) {
                 modelo.addRow(new Object[]{
@@ -58,13 +58,13 @@ public class Cliente extends javax.swing.JFrame {
 
     public void buscarCliente(String texto) {
         DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("IdCliente");
-        modelo.addColumn("Nombre");
-        modelo.addColumn("Apellidos");
-        modelo.addColumn("Telefono");
-        modelo.addColumn("Correo");
+        modelo.addColumn("idCliente");
+        modelo.addColumn("nombre");
+        modelo.addColumn("apellidos");
+        modelo.addColumn("telefono");
+        modelo.addColumn("correo");
 
-        String sql = "SELECT idCliente, nombre, apellidos, telefono, correo FROM Cliente "
+        String sql = "SELECT idCliente, nombre, apellidos, telefono, correo FROM clientes "
                 + "WHERE nombre LIKE '%" + texto + "%' "
                 + "OR apellidos LIKE '%" + texto + "%' "
                 + "OR telefono LIKE '%" + texto + "%' "
@@ -269,7 +269,7 @@ public class Cliente extends javax.swing.JFrame {
             if (confirmacion == javax.swing.JOptionPane.YES_OPTION) {
                 try (Connection conn = ConexionBD.obtenerConexion(); Statement stmt = conn.createStatement()) {
 
-                    String sql = "DELETE FROM Cliente WHERE idCliente = " + idCliente;
+                    String sql = "DELETE FROM clientes WHERE idCliente = " + idCliente;
                     int filas = stmt.executeUpdate(sql);
 
                     if (filas > 0) {

@@ -118,8 +118,8 @@ public void actualizarTablaCombinada() {
     // Consulta SQL para unir las tablas
     String sql = "SELECT p.idProducto, p.nombre, p.marca, p.descripcion, "
                + "i.unidades, i.limite "
-               + "FROM Producto p "
-               + "INNER JOIN Inventario i ON p.idProducto = i.Producto_idProducto";
+               + "FROM producto p "
+               + "INNER JOIN inventario i ON p.idProducto = i.Producto_idProducto";
     
     try (java.sql.Connection conn = ConexionBD.obtenerConexion();
          java.sql.PreparedStatement stmt = conn.prepareStatement(sql);
@@ -157,8 +157,7 @@ public void actualizarTablaCombinada() {
     
     //crear el metodo de registrar inventario con el parametro de codigo
     public void RegistroInventario(String nombreTabla) {
-    try {
-        int unidades = Integer.parseInt(txtUnidades.getText());
+    try {        
         int limite = Integer.parseInt(txtLimite.getText());
         
 
@@ -167,7 +166,7 @@ public void actualizarTablaCombinada() {
         try (java.sql.Connection conn = ConexionBD.obtenerConexion(); 
              java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, unidades);
+            
             pstmt.setInt(2, limite);
             pstmt.setInt(3, codigoProducto);
 
@@ -175,7 +174,7 @@ public void actualizarTablaCombinada() {
 
             if (filas > 0) {
                 JOptionPane.showMessageDialog(this, "Inventario registrado exitosamente.");
-                txtUnidades.setText("");
+                
                 txtLimite.setText("");
                 
             } else {
@@ -216,8 +215,8 @@ public void actualizarTablaCombinada() {
     
  public void modificarProductos(int idProducto, String nombre, String marca, String descripcion, 
                                 int unidades, int limite) {
-      String sqlProducto = "UPDATE Producto SET nombre = ?, marca = ?, descripcion = ? WHERE idProducto = ?";
-      String sqlInventario = "UPDATE Inventario SET unidades = ?, limite = ? WHERE Producto_idProducto = ?";
+      String sqlProducto = "UPDATE producto SET nombre = ?, marca = ?, descripcion = ? WHERE idProducto = ?";
+      String sqlInventario = "UPDATE inventario SET unidades = ?, limite = ? WHERE Producto_idProducto = ?";
     try (java.sql.Connection conn = ConexionBD.obtenerConexion();
             java.sql.PreparedStatement stmtProducto = conn.prepareStatement(sqlProducto);
             java.sql.PreparedStatement stmtInventario = conn.prepareStatement(sqlInventario)) {
@@ -253,8 +252,8 @@ public void actualizarTablaCombinada() {
  
  
  public void eliminarProductos(int idProducto) {
-      String sqlInventario = "DELETE FROM Inventario WHERE Producto_idProducto = ?";
-        String sqlProducto = "DELETE FROM Producto WHERE idProducto = ?";
+      String sqlInventario = "DELETE FROM inventario WHERE Producto_idProducto = ?";
+        String sqlProducto = "DELETE FROM producto WHERE idProducto = ?";
     try (java.sql.Connection conn = ConexionBD.obtenerConexion();
             java.sql.PreparedStatement stmtProducto = conn.prepareStatement(sqlProducto);
             java.sql.PreparedStatement stmtInventario = conn.prepareStatement(sqlInventario)) {
@@ -291,12 +290,10 @@ public void actualizarTablaCombinada() {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         txtMarca = new javax.swing.JTextField();
         txtBuscador = new javax.swing.JTextField();
         txtDescripcion = new javax.swing.JTextField();
-        txtUnidades = new javax.swing.JTextField();
         txtLimite = new javax.swing.JTextField();
         txtNombre = new javax.swing.JTextField();
         btnLupa = new javax.swing.JButton();
@@ -306,13 +303,15 @@ public void actualizarTablaCombinada() {
         btnEliminar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tabla = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMinimumSize(new java.awt.Dimension(951, 429));
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        jLabel1.setText("Productos");
-        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 0, 170, 40));
+        jLabel1.setText("Registro productos");
+        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(470, 0, 320, 40));
 
         jLabel2.setText("Marca:");
         getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 150, 62, 19));
@@ -320,11 +319,8 @@ public void actualizarTablaCombinada() {
         jLabel3.setText("Descripcion:");
         getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 220, -1, 19));
 
-        jLabel5.setText("Unidades:");
-        getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 290, 62, -1));
-
         jLabel6.setText("Limite:");
-        getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 350, 52, 22));
+        getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 300, 52, 22));
         getContentPane().add(txtMarca, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 150, 150, -1));
 
         txtBuscador.setText("Buscador");
@@ -336,8 +332,7 @@ public void actualizarTablaCombinada() {
             }
         });
         getContentPane().add(txtDescripcion, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 200, 150, 60));
-        getContentPane().add(txtUnidades, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 290, 150, -1));
-        getContentPane().add(txtLimite, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 350, 150, -1));
+        getContentPane().add(txtLimite, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 300, 150, -1));
         getContentPane().add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 110, 150, -1));
 
         btnLupa.setText("Lupa");
@@ -390,6 +385,14 @@ public void actualizarTablaCombinada() {
 
         getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 60, 510, 300));
 
+        jButton1.setText("Registrair Inventario");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 350, 150, 50));
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -438,6 +441,12 @@ if (fila >= 0) {
         actualizarTablaCombinada();
     }//GEN-LAST:event_btnLupaActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        AgregarInventario agregarInventario = new AgregarInventario();
+        agregarInventario.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -482,10 +491,10 @@ if (fila >= 0) {
     private javax.swing.JButton btnEliminar;
     private javax.swing.JButton btnLupa;
     private javax.swing.JButton btnModificar;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
@@ -494,6 +503,5 @@ if (fila >= 0) {
     private javax.swing.JTextField txtLimite;
     private javax.swing.JTextField txtMarca;
     private javax.swing.JTextField txtNombre;
-    private javax.swing.JTextField txtUnidades;
     // End of variables declaration//GEN-END:variables
 }

@@ -101,7 +101,7 @@ public class Bienvenido extends javax.swing.JFrame {
 
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
         // TODO add your handling code here:
-        boolean bo = hayRegistrosEnTabla("Usuario");
+        boolean bo = hayRegistrosEnTabla("usuario");
         if (bo) {
             Login login = new Login();
             login.setVisible(true);
