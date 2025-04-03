@@ -23,65 +23,61 @@ public class RegistroCliente extends javax.swing.JFrame {
     public RegistroCliente() {
 
         initComponents();
-        TXTCORREO.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                char c = e.getKeyChar();
-                if (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c) && !isSpecialCharacter(c)) {
-                    e.consume();
-                }
-            }
 
-            @Override
-            public void keyPressed(KeyEvent e) {
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-            }
-
-            private boolean isSpecialCharacter(char c) {
-                String specialChars = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/~`";
-                return specialChars.indexOf(c) != -1;
-            }
-        });
         TXTTELEFONO.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
 
+                // No permite letras ni símbolos
                 if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+
+                // No permite más de 10 dígitos
+                if (TXTTELEFONO.getText().length() >= 10) {
                     e.consume();
                 }
             }
         });
+
     }
 
-    public void RegistroCliente(String nombreTabla) {
-        String sql = "INSERT INTO " + nombreTabla + "(nombre, apellidos, telefono, correo) VALUES("
-                + "'" + TXTNOMBRE.getText() + "', "
-                + "'" + TXTAPELLIDOS.getText() + "', "
-                + "'" + TXTTELEFONO.getText() + "', "
-                + "'" + TXTCORREO.getText() + "')";
+    public void registrarClienteConProcedure() {
+        String nombre = TXTNOMBRE.getText().trim();
+        String apellidos = TXTAPELLIDOS.getText().trim();
+        String telefono = TXTTELEFONO.getText().trim();
+        String correo = TXTCORREO.getText().trim();
 
-        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.Statement stmt = conn.createStatement()) {
+        // Validar campos vacíos
+        if (nombre.isEmpty() || apellidos.isEmpty() || telefono.isEmpty() || correo.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "NO PUEDE DEJAR CAMPOS VACÍOS");
+            return;
+        }
 
-            int filas = stmt.executeUpdate(sql);
+        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.CallableStatement stmt = conn.prepareCall("{CALL AgregarCliente(?, ?, ?, ?)}")) {
 
-            if (filas > 0) {
-                JOptionPane.showMessageDialog(this, "Cliente registrado exitosamente.");
+            stmt.setString(1, nombre);
+            stmt.setString(2, apellidos);
+            stmt.setString(3, telefono);
+            stmt.setString(4, correo);
 
-                Cliente cliente = new Cliente();
-                cliente.setVisible(true);
-                this.dispose();
-                this.dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "No se insertó ningún registro.");
+            boolean tieneResultados = stmt.execute();
+
+            if (tieneResultados) {
+                java.sql.ResultSet rs = stmt.getResultSet();
+                if (rs.next()) {
+                    JOptionPane.showMessageDialog(this, rs.getString("mensaje") + "\nID: " + rs.getInt("idCliente"));
+
+                    Cliente cliente = new Cliente();
+                    cliente.setVisible(true);
+                    this.dispose();
+                }
             }
 
         } catch (SQLException e) {
-            System.out.println("Error al insertar en la tabla: " + e.getMessage());
-            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al registrar cliente: " + e.getMessage());
         }
     }
 
@@ -187,16 +183,28 @@ public class RegistroCliente extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
-        String name = TXTNOMBRE.getText();
-        String contra = TXTAPELLIDOS.getText();
-        String usu = TXTTELEFONO.getText();
-        String correo = TXTCORREO.getText();
+        String nombre = TXTNOMBRE.getText().trim();
+        String apellidos = TXTAPELLIDOS.getText().trim();
+        String telefono = TXTTELEFONO.getText().trim();
+        String correo = TXTCORREO.getText().trim();
 
-        if (TXTNOMBRE.getText() == "" || TXTAPELLIDOS.getText() == "" || TXTTELEFONO.getText() == "" || TXTCORREO.getText() == "") {
-            JOptionPane.showMessageDialog(this, "NO PUEDE DEJAR CAMPOS VACIOS");
-        } else {
-            RegistroCliente("Cliente");
+        if (nombre.isEmpty() || apellidos.isEmpty() || telefono.isEmpty() || correo.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No se permiten campos vacíos.");
+            return;
         }
+
+        if (!telefono.matches("\\d{10}")) {
+            JOptionPane.showMessageDialog(this, "El teléfono debe tener 10 dígitos numéricos.");
+            return;
+        }
+
+        if (!correo.matches("^[\\w.-]+@[\\w.-]+\\.\\w+$")) {
+            JOptionPane.showMessageDialog(this, "Correo electrónico inválido.");
+            return;
+        }
+
+        // Llama al método de inserción
+        registrarClienteConProcedure();
 
     }//GEN-LAST:event_btnRegistrarActionPerformed
 

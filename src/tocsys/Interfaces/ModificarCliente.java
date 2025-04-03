@@ -4,6 +4,9 @@
  */
 package tocsys.Interfaces;
 
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
 /**
  *
  * @author rocio
@@ -17,6 +20,22 @@ public class ModificarCliente extends javax.swing.JFrame {
      */
     public ModificarCliente() {
         initComponents();
+        TXTTELEFONO.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+
+                // No permite letras ni símbolos
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+
+                // No permite más de 10 dígitos
+                if (TXTTELEFONO.getText().length() >= 10) {
+                    e.consume();
+                }
+            }
+        });
 
     }
 
@@ -31,13 +50,31 @@ public class ModificarCliente extends javax.swing.JFrame {
 
     private void actualizarCliente() {
         // Obtener datos de los campos
-        String nombre = TXTNOMBRE.getText();
-        String apellidos = TXTAPELLIDOS.getText();
-        String telefono = TXTTELEFONO.getText();
-        String correo = TXTCORREO.getText();
+        String nombre = TXTNOMBRE.getText().trim();
+        String apellidos = TXTAPELLIDOS.getText().trim();
+        String telefono = TXTTELEFONO.getText().trim();
+        String correo = TXTCORREO.getText().trim();
 
-        // Crear la sentencia SQL UPDATE
-        String sql = "UPDATE Cliente SET nombre = '" + nombre + "', apellidos = '" + apellidos + "', "
+        // Validación de campos vacíos
+        if (nombre.isEmpty() || apellidos.isEmpty() || telefono.isEmpty() || correo.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "No se permiten campos vacíos.");
+            return;
+        }
+
+        // Validación del teléfono (solo 10 dígitos)
+        if (!telefono.matches("\\d{10}")) {
+            javax.swing.JOptionPane.showMessageDialog(this, "El teléfono debe tener 10 dígitos numéricos.");
+            return;
+        }
+
+        // Validación del correo (expresión regular)
+        if (!correo.matches("^[\\w.-]+@[\\w.-]+\\.\\w+$")) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Correo electrónico inválido.");
+            return;
+        }
+
+        // Sentencia SQL
+        String sql = "UPDATE clientes SET nombre = '" + nombre + "', apellidos = '" + apellidos + "', "
                 + "telefono = '" + telefono + "', correo = '" + correo + "' "
                 + "WHERE idCliente = " + idCliente;
 
@@ -47,8 +84,8 @@ public class ModificarCliente extends javax.swing.JFrame {
 
             if (filas > 0) {
                 javax.swing.JOptionPane.showMessageDialog(this, "Cliente modificado exitosamente.");
-                new Cliente().setVisible(true); // volver a la ventana Cliente
-                this.dispose(); // cerrar ventana actual
+                new Cliente().setVisible(true);
+                this.dispose();
             } else {
                 javax.swing.JOptionPane.showMessageDialog(this, "No se modificó el cliente.");
             }
