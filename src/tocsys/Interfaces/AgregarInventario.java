@@ -47,6 +47,8 @@ public class AgregarInventario extends javax.swing.JFrame {
         // Eventos para actualizar días válidos
         cmbMes.addActionListener(e -> LlenarDias());
         cmbAnio.addActionListener(e -> LlenarDias());
+        txtidProducto.addActionListener(e -> buscarProductoPorId());
+
     }
 
     public void LlenarDias() {
@@ -408,10 +410,54 @@ public class AgregarInventario extends javax.swing.JFrame {
 
     }//GEN-LAST:event_tblInventarioMouseClicked
 //---------------------------------------------------------------------------------------------------
-    
-    
+
+    private void buscarProductoPorId() {
+        String idTexto = txtidProducto.getText().trim();
+
+        if (idTexto.isEmpty()) {
+            cargarInventarioEnTabla(); // Cargar todo si no hay nada
+            return;
+        }
+
+        try {
+            int idBuscado = Integer.parseInt(idTexto);
+            m.setRowCount(0); // Limpiar tabla
+
+            String sql = "SELECT idProducto, nombre, cantidad, caducidad FROM vista_inventario_detallado WHERE idProducto = ?";
+
+            try (
+                    Connection conn = ConexionBD.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, idBuscado);
+                ResultSet rs = ps.executeQuery();
+
+                boolean encontrado = false;
+                while (rs.next()) {
+                    encontrado = true;
+                    Object[] fila = new Object[4];
+                    fila[0] = rs.getInt("idProducto");
+                    fila[1] = rs.getString("nombre");
+                    fila[2] = rs.getInt("cantidad");
+                    fila[3] = rs.getDate("caducidad");
+                    m.addRow(fila);
+                }
+
+                if (!encontrado) {
+                    JOptionPane.showMessageDialog(this, "No se encontró ningún producto con ese ID.");
+                    txtidProducto.setText("");
+                    cargarInventarioEnTabla(); // Opcional: volver a cargar todo
+                }
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Error al buscar: " + ex.getMessage());
+            }
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "ID inválido. Ingresa solo números.");
+            txtidProducto.setText("");
+        }
+    }
+
 //----------------------------------------------------------------------------------------------------
-    
     /**
      * @param args the command line arguments
      */
