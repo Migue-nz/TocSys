@@ -4,10 +4,12 @@
  */
 package tocsys.Interfaces;
 
+import java.sql.Connection;
 import tocsys.*;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -25,179 +27,98 @@ private int codigoProducto;
 
   
     
-    //crear 2 metodo de consulta producto uno total y otro que traiga el id del producto recien agregado
-    public int obtenerValor(String nombreTabla, String nombre, String marca, String descripcion) {
-        String sql = "SELECT idproducto FROM " + nombreTabla + " WHERE nombre = ? AND marca = ? AND descripcion = ? LIMIT 1";
-        int resultado = -1; // Valor por defecto si no encuentra nada
+    public void actualizarTablaCombinada() {
+        // Crear modelo de tabla con las columnas que necesitas
+        DefaultTableModel modeloTabla = new DefaultTableModel();
 
-        try (java.sql.Connection conn = ConexionBD.obtenerConexion();
-             java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {  
+        // Configurar columnas
+        modeloTabla.addColumn("Codigo");
+        modeloTabla.addColumn("Nombre");
+        modeloTabla.addColumn("Marca");
+        modeloTabla.addColumn("Descripcion");
+        modeloTabla.addColumn("LimiteMin");
+        modeloTabla.addColumn("LimiteMax");
 
-            stmt.setString(1, nombre);
-            stmt.setString(2, marca);
-            stmt.setString(3, descripcion);
-
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                resultado = rs.getInt("idproducto"); // Devuelve el ID o valor entero encontrado
-            }
-        } catch (SQLException e) {
-            System.out.println("Error al encontrar el id: " + e.getMessage());
-                JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
-        }
-
-        return resultado; // Retorna -1 si no encuentra ningún resultado
-    }
-    
-    /**
- * Actualiza la tabla con datos combinados de Producto e Inventario
- */
-public void actualizarTablaCombinada() {
-    // Crear modelo de tabla con las columnas que necesitas
-    DefaultTableModel modeloTabla = new DefaultTableModel();
-    
-    // Configurar columnas (según tu diseño)
-    modeloTabla.addColumn("Codigo");
-    modeloTabla.addColumn("Nombre");
-    modeloTabla.addColumn("Marca");
-    modeloTabla.addColumn("Descripcion");
-    modeloTabla.addColumn("Unidad");
-    modeloTabla.addColumn("Limite");
-    
-    // Consulta SQL para unir las tablas
-    String sql = "SELECT p.idProducto, p.nombre, p.marca, p.descripcion, "
-               + "i.unidades, i.limite "
-               + "FROM Producto p "
-               + "INNER JOIN Inventario i ON p.idProducto = i.Producto_idProducto";
-    
-    try (java.sql.Connection conn = ConexionBD.obtenerConexion();
-         java.sql.PreparedStatement stmt = conn.prepareStatement(sql);
-         ResultSet rs = stmt.executeQuery()) {
-        
-        // Llenar la tabla con los resultados
-        while (rs.next()) {
-            Object[] fila = {
-                rs.getInt("idProducto"),   // Código
-                rs.getString("nombre"),    // Nombre
-                rs.getString("marca"),     // Marca
-                rs.getString("descripcion"), // Descripción
-                rs.getInt("unidades"),    // Unidad
-                rs.getInt("limite")       // Límite
-            };
-            modeloTabla.addRow(fila);
-        }
-        
-        // Asignar el modelo a la tabla existente
-        Tabla.setModel(modeloTabla);
-        Tabla.revalidate();
-        Tabla.repaint();
-        
-        
-    } catch (SQLException e) {
-        System.err.println("Error al cargar datos combinados: " + e.getMessage());
-        JOptionPane.showMessageDialog(this, 
-            "Error al cargar los datos: " + e.getMessage(),
-            "Error", 
-            JOptionPane.ERROR_MESSAGE);
-    }
-}
-    
-
-    
-   
-
-    
-    
-    //metodo si el producto existe
-    public boolean nombreExiste(String nombreTabla, String nombre) {
-        String sql = "SELECT COUNT(*) FROM " + nombreTabla + " WHERE nombre = ?";
-        
+       
         try (java.sql.Connection conn = ConexionBD.obtenerConexion(); 
-             java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {  // Usar PreparedStatement en lugar de Statement
-
-            stmt.setString(1, nombre);  // Asigna el valor del parámetro correctamente
-            ResultSet rs = stmt.executeQuery();
+         java.sql.CallableStatement procedimiento = conn.prepareCall("{CALL MostrarProductos()}")) {
             
-            if (rs.next()) {
-                return rs.getInt(1) > 0; // Retorna true si el nombre ya existe
+            
+            // Ejecutar el procedimiento almacenado y obtener resultados
+        ResultSet resultado = procedimiento.executeQuery();
+
+            
+            while (resultado.next()) {
+                Object[] fila = {
+                    resultado.getInt("idProducto"),
+                    resultado.getString("nombre"),
+                    resultado.getString("marca"),
+                    resultado.getString("descripcion"),
+                    resultado.getInt("stockMinimo"),
+                    resultado.getInt("stockMaximo")
+                };
+                modeloTabla.addRow(fila);
             }
+
+            Tabla.setModel(modeloTabla);
+            Tabla.revalidate();
+            Tabla.repaint();
+
         } catch (SQLException e) {
-            System.out.println("Error al encontrar si el nombre existe: " + e.getMessage());
-                JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+            System.err.println("Error al cargar datos combinados: " + e.getMessage());
+            JOptionPane.showMessageDialog(this,
+                    "Error al cargar los datos: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
-        
-        return false; // Retorna false si no existe o hay un error
     }
-    
-    
- public void modificarProductos(int idProducto, String nombre, String marca, String descripcion, 
-                                int unidades, int limite) {
-      String sqlProducto = "UPDATE Producto SET nombre = ?, marca = ?, descripcion = ? WHERE idProducto = ?";
-      String sqlInventario = "UPDATE Inventario SET unidades = ?, limite = ? WHERE Producto_idProducto = ?";
-    try (java.sql.Connection conn = ConexionBD.obtenerConexion();
-            java.sql.PreparedStatement stmtProducto = conn.prepareStatement(sqlProducto);
-            java.sql.PreparedStatement stmtInventario = conn.prepareStatement(sqlInventario)) {
-        // 1. Actualizar Producto
-        
-       
-       
-            stmtProducto.setString(1, nombre);
-            stmtProducto.setString(2, marca);
-            stmtProducto.setString(3, descripcion);
-            stmtProducto.setInt(4, idProducto);
-            stmtProducto.executeUpdate();
-        
-        
-        // 2. Actualizar Inventario
-        
-        
-            stmtInventario.setInt(1, unidades);
-            stmtInventario.setInt(2, limite);
-            stmtInventario.setInt(3, idProducto);
-            stmtInventario.executeUpdate();
-        
+ 
+    public void buscarProducto(String texto) {
+        DefaultTableModel modeloTabla = new DefaultTableModel();
 
-        JOptionPane.showMessageDialog(this, "Actualización exitosa");
-        
+        // Configurar columnas
+        modeloTabla.addColumn("Codigo");
+        modeloTabla.addColumn("Nombre");
+        modeloTabla.addColumn("Marca");
+        modeloTabla.addColumn("Descripcion");
+        modeloTabla.addColumn("LimiteMin");
+        modeloTabla.addColumn("LimiteMax");
 
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage());
-        
+       String sql = "SELECT idProducto, nombre, marca, descripcion, stockMinimo, stockMaximo FROM productos "
+                + "WHERE (nombre LIKE '%" + texto + "%' "
+                + "OR marca LIKE '%" + texto + "%' "
+                + "OR descripcion LIKE '%" + texto + "%' "
+                + "OR idProducto LIKE '%" + texto + "%') "
+                + "AND eliminado = 0";
+
+
+        boolean hayResultados = false;
+
+        try (Connection conn = ConexionBD.obtenerConexion(); Statement stmt = conn.createStatement(); ResultSet resultado = stmt.executeQuery(sql)) {
+
+            while (resultado.next()) {
+                hayResultados = true;
+                modeloTabla.addRow(new Object[]{
+                   resultado.getInt("idProducto"),
+                    resultado.getString("nombre"),
+                    resultado.getString("marca"),
+                    resultado.getString("descripcion"),
+                    resultado.getInt("stockMinimo"),
+                    resultado.getInt("stockMaximo")
+                });
+            }
+
+            Tabla.setModel(modeloTabla); // actualiza la tabla incluso si está vacía
+
+            if (!hayResultados) {
+                javax.swing.JOptionPane.showMessageDialog(this, "No se encontraron resultados para: " + texto);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al buscar: " + e.getMessage());
+        }
     }
-}
-    
- 
- 
- public void eliminarProductos(int idProducto) {
-      String sqlInventario = "DELETE FROM Inventario WHERE Producto_idProducto = ?";
-        String sqlProducto = "DELETE FROM Producto WHERE idProducto = ?";
-    try (java.sql.Connection conn = ConexionBD.obtenerConexion();
-            java.sql.PreparedStatement stmtProducto = conn.prepareStatement(sqlProducto);
-            java.sql.PreparedStatement stmtInventario = conn.prepareStatement(sqlInventario)) {
-        
-        // 1. Primero eliminar el inventario (por la restricción de clave foránea)
-            stmtInventario.setInt(1, idProducto);
-            stmtInventario.executeUpdate();
-            
-            // 2. Luego eliminar el producto
-            stmtProducto.setInt(1, idProducto);
-            stmtProducto.executeUpdate();
-        
-
-        JOptionPane.showMessageDialog(this, "Eliminacion exitosa");
-        
-
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Error al Eliminacion: " + e.getMessage());
-        
-    }
-}
- 
- 
- 
- 
- 
  
     
     
@@ -220,9 +141,14 @@ public void actualizarTablaCombinada() {
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 0, 170, 40));
 
         txtBuscador.setText("Buscador");
+        txtBuscador.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtBuscadorActionPerformed(evt);
+            }
+        });
         getContentPane().add(txtBuscador, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 10, 240, -1));
 
-        btnLupa.setText("Lupa");
+        btnLupa.setText("Actualizar Tabla");
         btnLupa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnLupaActionPerformed(evt);
@@ -252,6 +178,16 @@ public void actualizarTablaCombinada() {
         // TODO add your handling code here:
         actualizarTablaCombinada();
     }//GEN-LAST:event_btnLupaActionPerformed
+
+    private void txtBuscadorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscadorActionPerformed
+        String texto = txtBuscador.getText().trim();
+
+        if (!texto.isEmpty()) {
+            buscarProducto(texto); // busca lo que se escribió
+        } else {
+            actualizarTablaCombinada(); // si está vacío, recarga todo
+        }
+    }//GEN-LAST:event_txtBuscadorActionPerformed
 
     /**
      * @param args the command line arguments

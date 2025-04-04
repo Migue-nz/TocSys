@@ -4,10 +4,14 @@
  */
 package tocsys.Interfaces;
 
+import com.mysql.cj.jdbc.CallableStatement;
+import java.sql.Connection;
 import tocsys.*;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.Types;
 import javax.swing.table.DefaultTableModel;
 import tocsys.ConexionBD;
 
@@ -25,80 +29,30 @@ public class RegistrarProducto extends javax.swing.JFrame {
 
     }
 
-    public void RegistrarProducto(String nombreTabla) {
-        if ("".equals(txtNombre.getText()) || "".equals(txtMarca.getText()) || "".equals(txtDescripcion.getText())) {
+    public void Producto() {
+        if ("".equals(txtNombre.getText()) || "".equals(txtMarca.getText()) || "".equals(txtDescripcion.getText()) 
+                || Integer.parseInt(txtCodigo.getText())  < 1  
+                || Integer.parseInt(txtLimiteMin.getText())  < 1 || Integer.parseInt(txtLimiteMax.getText())  < 1   ) {
             JOptionPane.showMessageDialog(this, "No dejes los campos vacios.");
         } else {
             //verificar que el nombre no exista antes del registro
-            boolean existe = nombreExiste("productos", txtNombre.getText());
+            //boolean existe = nombreExiste( txtNombre.getText());
 
-            if (existe == true) {
-                JOptionPane.showMessageDialog(this, "Producto duplicado.");
+            //if (existe == true) {
+                //JOptionPane.showMessageDialog(this, "Producto duplicado.");
 
-            } else {
-
-                String sql = "INSERT INTO " + nombreTabla + "(nombre, marca, descripcion) VALUES("
-                        + "'" + txtNombre.getText() + "', "
-                        + "'" + txtMarca.getText() + "', "
-                        + "'" + txtDescripcion.getText() + "')";
-
-                try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.Statement stmt = conn.createStatement()) {
-
-                    int filas = stmt.executeUpdate(sql);
-
-                    if (filas > 0) {
-                        JOptionPane.showMessageDialog(this, "Producto registrado exitosamente.");
-                        //consultas otra ves pero ahora solo trae la id y lo guardas en el codigo
-                        codigoProducto = obtenerValor("Producto", txtNombre.getText(), txtMarca.getText(), txtDescripcion.getText());
-                        //llamas al metodo registrar inventario
-                        RegistroInventario("Inventario");
-                        //consulta todos los producto, inventarios y lo guardas en la tabla.
+            //} else {
+                        agregarProducto();
                         actualizarTablaCombinada();
-
-                        txtNombre.setText("");
-                        txtMarca.setText("");
-                        txtDescripcion.setText("");
-
-                    } else {
-                        JOptionPane.showMessageDialog(this, "No se insertó ningún producto.");
-                    }
-
-                } catch (SQLException e) {
-                    System.out.println("Error al insertar en la tabla: " + e.getMessage());
-                    JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
-                }
-            }
+                        borrartxt();
+                        
+           // }
 
         }
     }
 
-    //crear 2 metodo de consulta producto uno total y otro que traiga el id del producto recien agregado
-    public int obtenerValor(String nombreTabla, String nombre, String marca, String descripcion) {
-        String sql = "SELECT idproducto FROM " + nombreTabla + " WHERE nombre = ? AND marca = ? AND descripcion = ? LIMIT 1";
-        int resultado = -1; // Valor por defecto si no encuentra nada
 
-        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, nombre);
-            stmt.setString(2, marca);
-            stmt.setString(3, descripcion);
-
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                resultado = rs.getInt("idproducto"); // Devuelve el ID o valor entero encontrado
-            }
-        } catch (SQLException e) {
-            System.out.println("Error al encontrar el id: " + e.getMessage());
-            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
-        }
-
-        return resultado; // Retorna -1 si no encuentra ningún resultado
-    }
-
-    /**
-     * Actualiza la tabla con datos combinados de Producto e Inventario
-     */
+   
     public void actualizarTablaCombinada() {
         // Crear modelo de tabla con las columnas que necesitas
         DefaultTableModel modeloTabla = new DefaultTableModel();
@@ -108,25 +62,26 @@ public class RegistrarProducto extends javax.swing.JFrame {
         modeloTabla.addColumn("Nombre");
         modeloTabla.addColumn("Marca");
         modeloTabla.addColumn("Descripcion");
-        modeloTabla.addColumn("Cantidad Total");
+        modeloTabla.addColumn("LimiteMin");
+        modeloTabla.addColumn("LimiteMax");
 
-        // Consulta SQL actualizada (sin 'limite')
-        String sql = "SELECT p.idProducto, p.nombre, p.marca, p.descripcion, "
-                + "SUM(i.cantidad) AS cantidad_total "
-                + "FROM productos p "
-                + "INNER JOIN inventario i ON p.idProducto = i.idProducto "
-                + "GROUP BY p.idProducto, p.nombre, p.marca, p.descripcion "
-                + "ORDER BY p.idProducto";
+       
+        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); 
+         java.sql.CallableStatement procedimiento = conn.prepareCall("{CALL MostrarProductos()}")) {
+            
+            
+            // Ejecutar el procedimiento almacenado y obtener resultados
+        ResultSet resultado = procedimiento.executeQuery();
 
-        try (
-                java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
+            
+            while (resultado.next()) {
                 Object[] fila = {
-                    rs.getInt("idProducto"),
-                    rs.getString("nombre"),
-                    rs.getString("marca"),
-                    rs.getString("descripcion"),
-                    rs.getInt("cantidad_total")
+                    resultado.getInt("idProducto"),
+                    resultado.getString("nombre"),
+                    resultado.getString("marca"),
+                    resultado.getString("descripcion"),
+                    resultado.getInt("stockMinimo"),
+                    resultado.getInt("stockMaximo")
                 };
                 modeloTabla.addRow(fila);
             }
@@ -144,40 +99,11 @@ public class RegistrarProducto extends javax.swing.JFrame {
         }
     }
 
-    //crear el metodo de registrar inventario con el parametro de codigo
-    public void RegistroInventario(String nombreTabla) {
-        try {
-            int limite = Integer.parseInt(txtLimite.getText());
-
-            String sql = "INSERT INTO " + nombreTabla + " (unidades, limite, Producto_idProducto) VALUES(?, ?, ?)";
-
-            try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-                pstmt.setInt(2, limite);
-                pstmt.setInt(3, codigoProducto);
-
-                int filas = pstmt.executeUpdate();
-
-                if (filas > 0) {
-                    JOptionPane.showMessageDialog(this, "Inventario registrado exitosamente.");
-
-                    txtLimite.setText("");
-
-                } else {
-                    JOptionPane.showMessageDialog(this, "No se insertó ningún registro.");
-                }
-            } catch (SQLException e) {
-                System.out.println("Error al insertar en la tabla: " + e.getMessage());
-                JOptionPane.showMessageDialog(this, "Error al registrar inventario: " + e.getMessage());
-            }
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor ingrese valores numéricos válidos en unidades, límite.");
-        }
-    }
+    
 
     //metodo si el producto existe
-    public boolean nombreExiste(String nombreTabla, String nombre) {
-        String sql = "SELECT COUNT(*) FROM " + nombreTabla + " WHERE nombre = ?";
+    public boolean nombreExiste( String nombre) {
+        String sql = "SELECT COUNT(*) FROM  productos  WHERE nombre = ?";
 
         try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {  // Usar PreparedStatement en lugar de Statement
 
@@ -195,24 +121,23 @@ public class RegistrarProducto extends javax.swing.JFrame {
         return false; // Retorna false si no existe o hay un error
     }
 
-    public void modificarProductos(int idProducto, String nombre, String marca, String descripcion,
-            int unidades, int limite) {
-        String sqlProducto = "UPDATE producto SET nombre = ?, marca = ?, descripcion = ? WHERE idProducto = ?";
-        String sqlInventario = "UPDATE inventario SET unidades = ?, limite = ? WHERE Producto_idProducto = ?";
-        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.PreparedStatement stmtProducto = conn.prepareStatement(sqlProducto); java.sql.PreparedStatement stmtInventario = conn.prepareStatement(sqlInventario)) {
+    
+    
+    public void modificarProductos(int idProducto, String nombre, String marca, String descripcion, int stockMinimo, int stockMaximo) {
+        String sqlProducto = "UPDATE productos SET nombre = ?, marca = ?, descripcion = ?,  stockMinimo = ?, stockMaximo = ?  WHERE idProducto = ?";
+        
+        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.PreparedStatement stmtProducto = conn.prepareStatement(sqlProducto);) {
             // 1. Actualizar Producto
 
             stmtProducto.setString(1, nombre);
             stmtProducto.setString(2, marca);
             stmtProducto.setString(3, descripcion);
-            stmtProducto.setInt(4, idProducto);
+            stmtProducto.setInt(4, stockMinimo);
+            stmtProducto.setInt(5, stockMaximo);
+            stmtProducto.setInt(6, idProducto);
             stmtProducto.executeUpdate();
 
-            // 2. Actualizar Inventario
-            stmtInventario.setInt(1, unidades);
-            stmtInventario.setInt(2, limite);
-            stmtInventario.setInt(3, idProducto);
-            stmtInventario.executeUpdate();
+            
 
             JOptionPane.showMessageDialog(this, "Actualización exitosa");
 
@@ -223,26 +148,135 @@ public class RegistrarProducto extends javax.swing.JFrame {
     }
 
     public void eliminarProductos(int idProducto) {
-        String sqlInventario = "DELETE FROM inventario WHERE Producto_idProducto = ?";
-        String sqlProducto = "DELETE FROM productos WHERE idProducto = ?";
-        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.PreparedStatement stmtProducto = conn.prepareStatement(sqlProducto); java.sql.PreparedStatement stmtInventario = conn.prepareStatement(sqlInventario)) {
+        
+        try (java.sql.Connection conn = ConexionBD.obtenerConexion(); 
+         java.sql.CallableStatement procedimiento = conn.prepareCall("{CALL EliminarProducto(?,?)}")) {
+            
 
-            // 1. Primero eliminar el inventario (por la restricción de clave foránea)
-            stmtInventario.setInt(1, idProducto);
-            stmtInventario.executeUpdate();
+            // 1. Luego eliminar el producto
+            procedimiento.setInt(1, idProducto);
+             procedimiento.registerOutParameter(2, Types.VARCHAR );
+            procedimiento.executeUpdate();
+           
+            String mensaje = procedimiento.getString(2);
+        
+            // Mostrar mensaje al usuario
+            JOptionPane.showMessageDialog(null, mensaje, "Resultado", JOptionPane.INFORMATION_MESSAGE);
 
-            // 2. Luego eliminar el producto
-            stmtProducto.setInt(1, idProducto);
-            stmtProducto.executeUpdate();
-
-            JOptionPane.showMessageDialog(this, "Eliminacion exitosa");
+            actualizarTablaCombinada();
+            
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error al Eliminacion: " + e.getMessage());
 
         }
     }
+    
+    
+    public void agregarProducto(){
+    
+    
+    try (java.sql.Connection conn = ConexionBD.obtenerConexion(); 
+         java.sql.CallableStatement procedimiento = conn.prepareCall("{CALL AgregarProducto(?,?,?,?,?,?)}")) {
+            
+        
+        
+            procedimiento.setInt(1, Integer.parseInt(txtCodigo.getText()));
+            procedimiento.setString(2, txtNombre.getText());
+            procedimiento.setString(3, txtMarca.getText());
+            procedimiento.setString(4, txtDescripcion.getText());
+            procedimiento.setInt(5, Integer.parseInt(txtLimiteMin.getText()));
+            procedimiento.setInt(6, Integer.parseInt(txtLimiteMax.getText()));
+        
+        
+            // Ejecutar el procedimiento
+            procedimiento.executeQuery();
 
+           System.out.println("Producto agregado correctamente");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    
+    
+    
+    
+    
+    
+    
+    }
+    
+    public void borrartxt(){
+    
+                        txtNombre.setText("");
+                        txtMarca.setText("");
+                        txtDescripcion.setText("");
+                        txtCodigo.setText("");
+                        txtLimiteMax.setText("");
+                        txtLimiteMin.setText("");
+    
+    }
+    
+    
+    
+    
+    
+    public void buscarProducto(String texto) {
+        DefaultTableModel modeloTabla = new DefaultTableModel();
+
+        // Configurar columnas
+        modeloTabla.addColumn("Codigo");
+        modeloTabla.addColumn("Nombre");
+        modeloTabla.addColumn("Marca");
+        modeloTabla.addColumn("Descripcion");
+        modeloTabla.addColumn("LimiteMin");
+        modeloTabla.addColumn("LimiteMax");
+
+       String sql = "SELECT idProducto, nombre, marca, descripcion, stockMinimo, stockMaximo FROM productos "
+                + "WHERE (nombre LIKE '%" + texto + "%' "
+                + "OR marca LIKE '%" + texto + "%' "
+                + "OR descripcion LIKE '%" + texto + "%' "
+                + "OR idProducto LIKE '%" + texto + "%') "
+                + "AND eliminado = 0";
+
+
+        boolean hayResultados = false;
+
+        try (Connection conn = ConexionBD.obtenerConexion(); Statement stmt = conn.createStatement(); ResultSet resultado = stmt.executeQuery(sql)) {
+
+            while (resultado.next()) {
+                hayResultados = true;
+                modeloTabla.addRow(new Object[]{
+                   resultado.getInt("idProducto"),
+                    resultado.getString("nombre"),
+                    resultado.getString("marca"),
+                    resultado.getString("descripcion"),
+                    resultado.getInt("stockMinimo"),
+                    resultado.getInt("stockMaximo")
+                });
+            }
+
+            Tabla.setModel(modeloTabla); // actualiza la tabla incluso si está vacía
+
+            if (!hayResultados) {
+                javax.swing.JOptionPane.showMessageDialog(this, "No se encontraron resultados para: " + texto);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al buscar: " + e.getMessage());
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -254,7 +288,7 @@ public class RegistrarProducto extends javax.swing.JFrame {
         txtMarca = new javax.swing.JTextField();
         txtBuscador = new javax.swing.JTextField();
         txtDescripcion = new javax.swing.JTextField();
-        txtLimite = new javax.swing.JTextField();
+        txtLimiteMin = new javax.swing.JTextField();
         txtNombre = new javax.swing.JTextField();
         btnLupa = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
@@ -264,6 +298,10 @@ public class RegistrarProducto extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         Tabla = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
+        txtCodigo = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        txtLimiteMax = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(951, 429));
@@ -271,7 +309,7 @@ public class RegistrarProducto extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
         jLabel1.setText("Registro productos");
-        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(470, 0, 320, 40));
+        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 10, 320, 50));
 
         jLabel2.setText("Marca:");
         getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 150, 62, 19));
@@ -279,11 +317,16 @@ public class RegistrarProducto extends javax.swing.JFrame {
         jLabel3.setText("Descripcion:");
         getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 220, -1, 19));
 
-        jLabel6.setText("Limite:");
-        getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 300, 52, 22));
+        jLabel6.setText("Limite Minimo:");
+        getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 280, 90, 22));
         getContentPane().add(txtMarca, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 150, 150, -1));
 
         txtBuscador.setText("Buscador");
+        txtBuscador.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtBuscadorActionPerformed(evt);
+            }
+        });
         getContentPane().add(txtBuscador, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 10, 240, -1));
 
         txtDescripcion.addActionListener(new java.awt.event.ActionListener() {
@@ -292,16 +335,16 @@ public class RegistrarProducto extends javax.swing.JFrame {
             }
         });
         getContentPane().add(txtDescripcion, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 200, 150, 60));
-        getContentPane().add(txtLimite, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 300, 150, -1));
+        getContentPane().add(txtLimiteMin, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 280, 150, -1));
         getContentPane().add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 110, 150, -1));
 
-        btnLupa.setText("Lupa");
+        btnLupa.setText("Actualizar Tabla");
         btnLupa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnLupaActionPerformed(evt);
             }
         });
-        getContentPane().add(btnLupa, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 10, -1, -1));
+        getContentPane().add(btnLupa, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 10, -1, -1));
 
         jLabel7.setText("Nombre:");
         getContentPane().add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 110, 62, 25));
@@ -312,7 +355,7 @@ public class RegistrarProducto extends javax.swing.JFrame {
                 btnModificarActionPerformed(evt);
             }
         });
-        getContentPane().add(btnModificar, new org.netbeans.lib.awtextra.AbsoluteConstraints(720, 370, -1, -1));
+        getContentPane().add(btnModificar, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 390, -1, -1));
 
         btnAgregar.setText("Agregar");
         btnAgregar.addActionListener(new java.awt.event.ActionListener() {
@@ -320,7 +363,7 @@ public class RegistrarProducto extends javax.swing.JFrame {
                 btnAgregarActionPerformed(evt);
             }
         });
-        getContentPane().add(btnAgregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 370, -1, -1));
+        getContentPane().add(btnAgregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 390, -1, -1));
 
         btnEliminar.setText("Eliminar");
         btnEliminar.addActionListener(new java.awt.event.ActionListener() {
@@ -328,7 +371,7 @@ public class RegistrarProducto extends javax.swing.JFrame {
                 btnEliminarActionPerformed(evt);
             }
         });
-        getContentPane().add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 370, -1, -1));
+        getContentPane().add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 390, -1, -1));
 
         Tabla.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -338,12 +381,12 @@ public class RegistrarProducto extends javax.swing.JFrame {
                 {null, null, null, null, null, null}
             },
             new String [] {
-                "Codigo", "Nombre", "Marca", "Descripcion", "Unidad", "Limite"
+                "Codigo", "Nombre", "Marca", "Descripcion", "LimiteMin", "LimiteMax"
             }
         ));
         jScrollPane1.setViewportView(Tabla);
 
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 60, 510, 300));
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 70, 640, 300));
 
         jButton1.setText("Registrair Inventario");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -352,6 +395,14 @@ public class RegistrarProducto extends javax.swing.JFrame {
             }
         });
         getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 350, 150, 50));
+        getContentPane().add(txtCodigo, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 70, 150, -1));
+
+        jLabel8.setText("Codigo:");
+        getContentPane().add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, 62, 25));
+
+        jLabel9.setText("Limite Maximo:");
+        getContentPane().add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, 90, 22));
+        getContentPane().add(txtLimiteMax, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 320, 150, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -362,7 +413,7 @@ public class RegistrarProducto extends javax.swing.JFrame {
 
     private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
         // TODO add your handling code here:
-        RegistrarProducto("productos");
+        Producto();
     }//GEN-LAST:event_btnAgregarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
@@ -374,6 +425,9 @@ public class RegistrarProducto extends javax.swing.JFrame {
             int codigo = Integer.parseInt(Tabla.getValueAt(fila, 0).toString());
 
             eliminarProductos(codigo);
+        }else{
+        JOptionPane.showMessageDialog(this, "Selecciones un reglon.");
+        
         }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
@@ -388,10 +442,13 @@ public class RegistrarProducto extends javax.swing.JFrame {
             String nombre = (String) Tabla.getValueAt(fila, 1);
             String marca = (String) Tabla.getValueAt(fila, 2);
             String descripcion = (String) Tabla.getValueAt(fila, 3);
-            int unidad = Integer.parseInt(Tabla.getValueAt(fila, 4).toString());
-            int limite = Integer.parseInt(Tabla.getValueAt(fila, 5).toString());
+            int stockMinimo = Integer.parseInt(Tabla.getValueAt(fila, 4).toString());
+            int stockMaximo = Integer.parseInt(Tabla.getValueAt(fila, 5).toString());
 
-            modificarProductos(codigo, nombre, marca, descripcion, unidad, limite);
+            modificarProductos(codigo, nombre, marca, descripcion, stockMinimo, stockMaximo);
+        }else{
+        JOptionPane.showMessageDialog(this, "Selecciones un reglon.");
+        
         }
     }//GEN-LAST:event_btnModificarActionPerformed
 
@@ -405,6 +462,16 @@ public class RegistrarProducto extends javax.swing.JFrame {
         agregarInventario.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void txtBuscadorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscadorActionPerformed
+        String texto = txtBuscador.getText().trim();
+
+        if (!texto.isEmpty()) {
+            buscarProducto(texto); // busca lo que se escribió
+        } else {
+            actualizarTablaCombinada(); // si está vacío, recarga todo
+        }
+    }//GEN-LAST:event_txtBuscadorActionPerformed
 
     /**
      * @param args the command line arguments
@@ -456,10 +523,14 @@ public class RegistrarProducto extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField txtBuscador;
+    private javax.swing.JTextField txtCodigo;
     private javax.swing.JTextField txtDescripcion;
-    private javax.swing.JTextField txtLimite;
+    private javax.swing.JTextField txtLimiteMax;
+    private javax.swing.JTextField txtLimiteMin;
     private javax.swing.JTextField txtMarca;
     private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
