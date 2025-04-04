@@ -17,53 +17,23 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import tocsys.ConexionBD;
 
+
+//actualizar podría hacer una transacción entre eliminar (actualiza horas disponibles) y agregar
 /**
  *
  * @author danie
  */
 public class AgregarCitas extends javax.swing.JFrame {
   // private  List<String> idhor = new ArrayList<>();
+    String JSON = "";
+    
+    //Para eliminar cita, capturo sus productos en un archivo JSON y por cada uno, uso el metodo de gestionarInventario
     
     
     public AgregarCitas() {
         initComponents();
-        cargarClientesEnTabla();
         rellenarcombobox();
     }
-    
-    
-    public void cargarClientesEnTabla() {
-        DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("IdCliente");
-        modelo.addColumn("Nombre");
-        modelo.addColumn("Apellidos");
-        modelo.addColumn("Telefono");
-        modelo.addColumn("Correo");
-        modelo.addColumn("Fecha");
-
-        try (Connection conn = ConexionBD.obtenerConexion(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT idCliente, nombre, apellidos, telefono, correo FROM Cliente")) {
-
-            while (rs.next()) {
-                modelo.addRow(new Object[]{
-                    rs.getInt("idCliente"),
-                    rs.getString("nombre"),
-                    rs.getString("apellidos"),
-                    rs.getString("telefono"),
-                    rs.getString("correo")
-                });
-            }
-
-            tblClientes.setModel(modelo);
-
-        } catch (Exception e) {
-            System.out.println("Error al cargar clientes: " + e.getMessage());
-        }
-    }
-
-    
-    
-    
-    
     
     
     private Date obtenerFechaValidada() {
@@ -80,51 +50,6 @@ public class AgregarCitas extends javax.swing.JFrame {
 }
     
     
-    
-    
-
-/*
-    public void RegistrarCitas(int idcliente,String fechaFormateada,int idhorario ) {
-        
-            
-            String sql = "INSERT INTO Cita (idCita, idFecha,idHora, idCliente) VALUES("
-                + "'" + idcliente + "', "
-                + "'" + fechaFormateada + "', "
-                + "'" + txtDescripcion.getText() + "')";
-
-            try (java.sql.Connection conn = ConexionBD.obtenerConexion(); java.sql.Statement stmt = conn.createStatement()) {
-            
-            
-            
-                int filas = stmt.executeUpdate(sql);
-
-                if (filas > 0) {
-                    JOptionPane.showMessageDialog(this, "Producto registrado exitosamente.");   
-                    //consultas otra ves pero ahora solo trae la id y lo guardas en el codigo
-                    codigoProducto = obtenerValor("Producto",txtNombre.getText(),txtMarca.getText(),txtDescripcion.getText());
-                    //llamas al metodo registrar inventario
-                    RegistroInventario("Inventario");
-                    //consulta todos los producto, inventarios y lo guardas en la tabla.
-                    actualizarTablaCombinada();
-                    
-                    
-                    txtNombre.setText("");
-                    txtMarca.setText("");
-                    txtDescripcion.setText("");
-                    
-                } else {
-                    JOptionPane.showMessageDialog(this, "No se insertó ningún producto.");                
-                }
-
-            } catch (SQLException e) {
-                System.out.println("Error al insertar en la tabla: " + e.getMessage());
-                JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
-            }
-        
-        
-       
-    }
-    */
     
     public void rellenarcombobox(){
         cbxhorario.removeAllItems();
@@ -172,14 +97,22 @@ public class AgregarCitas extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fecha = new com.toedter.calendar.JDateChooser();
         btnAgendarCita = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tblClientes = new javax.swing.JTable();
-        cbxhorario = new javax.swing.JComboBox<>();
+        jCalendar1 = new com.toedter.calendar.JCalendar();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jComboBox2 = new javax.swing.JComboBox<>();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        jComboBox3 = new javax.swing.JComboBox<>();
+        jComboBox4 = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
+        jComboBox5 = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(998, 426));
+        getContentPane().setLayout(null);
 
         btnAgendarCita.setText("Agendar CIta");
         btnAgendarCita.addActionListener(new java.awt.event.ActionListener() {
@@ -187,89 +120,75 @@ public class AgregarCitas extends javax.swing.JFrame {
                 btnAgendarCitaActionPerformed(evt);
             }
         });
+        getContentPane().add(btnAgendarCita);
+        btnAgendarCita.setBounds(780, 390, 99, 23);
+        getContentPane().add(jCalendar1);
+        jCalendar1.setBounds(480, 40, 333, 230);
 
-        tblClientes.setModel(new javax.swing.table.DefaultTableModel(
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        getContentPane().add(jComboBox1);
+        jComboBox1.setBounds(100, 370, 72, 22);
+
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        getContentPane().add(jComboBox2);
+        jComboBox2.setBounds(580, 280, 72, 22);
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "IdCliente", "Nombre", "Apellidos", "telefono", "Correo", "Fecha"
+                "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(tblClientes);
+        jScrollPane3.setViewportView(jTable1);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(44, 44, 44)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 522, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(45, 45, 45)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(fecha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cbxhorario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(157, 157, 157)
-                        .addComponent(btnAgendarCita)))
-                .addContainerGap(258, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(32, 32, 32)
-                        .addComponent(fecha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(37, 37, 37)
-                        .addComponent(cbxhorario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(53, 53, 53)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(118, 118, 118)
-                .addComponent(btnAgendarCita)
-                .addContainerGap(165, Short.MAX_VALUE))
-        );
+        getContentPane().add(jScrollPane3);
+        jScrollPane3.setBounds(20, 70, 390, 210);
+
+        jTextField1.setText("Seleccionar cliente");
+        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField1ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jTextField1);
+        jTextField1.setBounds(20, 40, 230, 22);
+
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 3, 24)); // NOI18N
+        jLabel5.setText("AGENDAR CITAS");
+        getContentPane().add(jLabel5);
+        jLabel5.setBounds(300, 0, 269, 32);
+
+        jComboBox3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccionar servicio" }));
+        getContentPane().add(jComboBox3);
+        jComboBox3.setBounds(20, 300, 250, 22);
+
+        jComboBox4.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        getContentPane().add(jComboBox4);
+        jComboBox4.setBounds(480, 280, 72, 22);
+
+        jLabel1.setText("Tiempo adicional");
+        getContentPane().add(jLabel1);
+        jLabel1.setBounds(20, 340, 200, 16);
+
+        jComboBox5.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        getContentPane().add(jComboBox5);
+        jComboBox5.setBounds(20, 370, 72, 22);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAgendarCitaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgendarCitaActionPerformed
 
-    obtenerFechaValidada();
-        
-      Date fechaCita = obtenerFechaValidada();
-    
-    if(fechaCita != null) {
-        // Aquí tu lógica para agendar la cita
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        String fechaFormateada = sdf.format(fechaCita);
-        System.out.println("Fecha agendada: " + fechaFormateada);
-        
-         int fila = tblClientes.getSelectedRow();
-
-        if (fila >= 0) {
-        // Obtener datos de columnas específicas
-        int codigo = Integer.parseInt(tblClientes.getValueAt(fila, 0).toString()) ;
-        //int filahorario = cbxhorario.get ;
-           // if(){
-               // RegistrarCitas(codigo,fechaFormateada,idhorario); 
-            //}else{
-                
-            //}
-        
-        
-        
-        }
-    }
-       
-
     }//GEN-LAST:event_btnAgendarCitaActionPerformed
+
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -308,9 +227,16 @@ public class AgregarCitas extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAgendarCita;
-    private javax.swing.JComboBox<String> cbxhorario;
-    private com.toedter.calendar.JDateChooser fecha;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable tblClientes;
+    private com.toedter.calendar.JCalendar jCalendar1;
+    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JComboBox<String> jComboBox3;
+    private javax.swing.JComboBox<String> jComboBox4;
+    private javax.swing.JComboBox<String> jComboBox5;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }
