@@ -21,7 +21,7 @@ String tipo ;
     String user = txtUsuario.getText();
     String contrasena = txtContrasena.getText();
 
-    String sqlTipoUsuario = "SELECT user,tipoUsuario FROM Usuario WHERE user = '" + user + "' AND contrasena = '" + contrasena + "'";
+    String sqlTipoUsuario = "SELECT user,tipoUsuario FROM usuario WHERE user = '" + user + "' AND contrasena = '" + contrasena + "'";
 
     try (java.sql.Connection conn = ConexionBD.obtenerConexion();
          java.sql.Statement stmt = conn.createStatement();

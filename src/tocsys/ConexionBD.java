@@ -14,7 +14,6 @@ import java.sql.SQLException;
  */
 public class ConexionBD {
      private static final String URL = "jdbc:mysql://tangamandapio.software:3306/pruebas";
-
     private static final String USUARIO = "admin";
     private static final String CONTRASENA = "admin";
 

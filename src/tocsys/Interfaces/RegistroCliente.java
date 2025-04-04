@@ -188,9 +188,16 @@ public class RegistroCliente extends javax.swing.JFrame {
         String telefono = TXTTELEFONO.getText().trim();
         String correo = TXTCORREO.getText().trim();
 
+<<<<<<< HEAD
         if (nombre.isEmpty() || apellidos.isEmpty() || telefono.isEmpty() || correo.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No se permiten campos vacíos.");
             return;
+=======
+        if (TXTNOMBRE.getText() == "" || TXTAPELLIDOS.getText() == "" || TXTTELEFONO.getText() == "" || TXTCORREO.getText() == "") {
+            JOptionPane.showMessageDialog(this, "NO PUEDE DEJAR CAMPOS VACIOS");
+        } else {
+            RegistroCliente("clientes");
+>>>>>>> Productos
         }
 
         if (!telefono.matches("\\d{10}")) {

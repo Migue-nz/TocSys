@@ -62,6 +62,7 @@ public class Cliente extends javax.swing.JFrame {
     }
 
     public void buscarCliente(String texto) {
+<<<<<<< HEAD
         DefaultTableModel modelo = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -74,6 +75,21 @@ public class Cliente extends javax.swing.JFrame {
         modelo.addColumn("Telefono");
         modelo.addColumn("Correo");
 
+=======
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.addColumn("idCliente");
+        modelo.addColumn("nombre");
+        modelo.addColumn("apellidos");
+        modelo.addColumn("telefono");
+        modelo.addColumn("correo");
+
+        String sql = "SELECT idCliente, nombre, apellidos, telefono, correo FROM clientes "
+                + "WHERE nombre LIKE '%" + texto + "%' "
+                + "OR apellidos LIKE '%" + texto + "%' "
+                + "OR telefono LIKE '%" + texto + "%' "
+                + "OR correo LIKE '%" + texto + "%'";
+
+>>>>>>> Productos
         boolean hayResultados = false;
 
         try (Connection conn = ConexionBD.obtenerConexion(); java.sql.CallableStatement stmt = conn.prepareCall("{CALL BuscarClientePorNombre(?)}")) {
