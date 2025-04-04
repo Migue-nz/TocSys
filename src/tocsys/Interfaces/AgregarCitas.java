@@ -32,7 +32,7 @@ public class AgregarCitas extends javax.swing.JFrame {
     
     public AgregarCitas() {
         initComponents();
-        rellenarcombobox();
+        setSize(800, 440);
     }
     
     
@@ -109,41 +109,53 @@ public class AgregarCitas extends javax.swing.JFrame {
         jComboBox4 = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
         jComboBox5 = new javax.swing.JComboBox<>();
+        jLabel2 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(998, 426));
         getContentPane().setLayout(null);
 
         btnAgendarCita.setText("Agendar CIta");
+        btnAgendarCita.setEnabled(false);
         btnAgendarCita.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAgendarCitaActionPerformed(evt);
             }
         });
         getContentPane().add(btnAgendarCita);
-        btnAgendarCita.setBounds(780, 390, 99, 23);
+        btnAgendarCita.setBounds(430, 360, 99, 23);
         getContentPane().add(jCalendar1);
-        jCalendar1.setBounds(480, 40, 333, 230);
+        jCalendar1.setBounds(430, 50, 333, 230);
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         getContentPane().add(jComboBox1);
-        jComboBox1.setBounds(100, 370, 72, 22);
+        jComboBox1.setBounds(100, 350, 72, 22);
 
         jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         getContentPane().add(jComboBox2);
-        jComboBox2.setBounds(580, 280, 72, 22);
+        jComboBox2.setBounds(570, 320, 72, 22);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Nombre", "Telefono"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane3.setViewportView(jTable1);
 
         getContentPane().add(jScrollPane3);
@@ -165,19 +177,43 @@ public class AgregarCitas extends javax.swing.JFrame {
 
         jComboBox3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccionar servicio" }));
         getContentPane().add(jComboBox3);
-        jComboBox3.setBounds(20, 300, 250, 22);
+        jComboBox3.setBounds(20, 290, 250, 22);
 
         jComboBox4.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         getContentPane().add(jComboBox4);
-        jComboBox4.setBounds(480, 280, 72, 22);
+        jComboBox4.setBounds(430, 320, 72, 22);
 
-        jLabel1.setText("Tiempo adicional");
+        jLabel1.setText("Minutos");
         getContentPane().add(jLabel1);
-        jLabel1.setBounds(20, 340, 200, 16);
+        jLabel1.setBounds(100, 380, 60, 16);
 
         jComboBox5.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         getContentPane().add(jComboBox5);
-        jComboBox5.setBounds(20, 370, 72, 22);
+        jComboBox5.setBounds(20, 350, 72, 22);
+
+        jLabel2.setText("Seleccionar hora");
+        getContentPane().add(jLabel2);
+        jLabel2.setBounds(430, 290, 110, 16);
+
+        jButton1.setText("Seleccionar productos");
+        getContentPane().add(jButton1);
+        jButton1.setBounds(190, 350, 150, 23);
+
+        jLabel3.setText("Tiempo adicional");
+        getContentPane().add(jLabel3);
+        jLabel3.setBounds(20, 320, 200, 16);
+
+        jLabel4.setText("Horas");
+        getContentPane().add(jLabel4);
+        jLabel4.setBounds(20, 380, 60, 16);
+
+        jLabel6.setText("Minutos");
+        getContentPane().add(jLabel6);
+        jLabel6.setBounds(650, 320, 60, 20);
+
+        jLabel7.setText("Horas");
+        getContentPane().add(jLabel7);
+        jLabel7.setBounds(510, 320, 60, 20);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -227,6 +263,7 @@ public class AgregarCitas extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAgendarCita;
+    private javax.swing.JButton jButton1;
     private com.toedter.calendar.JCalendar jCalendar1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
@@ -234,7 +271,12 @@ public class AgregarCitas extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> jComboBox4;
     private javax.swing.JComboBox<String> jComboBox5;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
