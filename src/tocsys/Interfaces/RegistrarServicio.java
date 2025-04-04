@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package tocsys.Interfaces;
 
 import com.mysql.cj.jdbc.CallableStatement;
@@ -10,28 +6,54 @@ import javax.swing.JOptionPane;
 import tocsys.ConexionBD;
 import java.sql.*;
 import java.sql.Types;          // Para LONGNVARCHAR, VARCHAR, etc.
+import javax.swing.JFrame;
 
 /**
  *
  * @author Jesus
  */
 public class RegistrarServicio extends javax.swing.JFrame {
+    Servicios c;
     String busqueda = "";
-    
-    
-    
-    public void registroServicio(String p_nombre, String p_descripcion, String p_duracion){
+
+    public void cargarServicios(String busqueda) {
+
+        String sql = "SELECT nombre, descripcion, duracion FROM servicios WHERE nombre = ?";
+        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, busqueda);        // Primer parámetro (String)
+
+            ResultSet rs = stmt.executeQuery();
+
+// Verificar si hay resultados y mover el cursor a la primera fila
+            if (rs.next()) { // Avanza a la primera fila (retorna true si hay datos)
+                txtNom.setText(rs.getString("nombre")); // ✔️ Ahora sí funciona
+                txtDesc.setText(rs.getString("descripcion"));
+                String duracion = rs.getString("duracion");
+
+                //debo cortar los minutos y las horas
+                String horas = duracion.substring(0, 2);
+                String minutos = duracion.substring(3, 5);
+
+                jcbHoras.setSelectedItem(horas);
+                jcbMinutos.setSelectedItem(minutos);
+            } else {
+                System.out.println("No se encontraron resultados.");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void registroServicio(String p_nombre, String p_descripcion, String p_duracion) {
         String sql = "{call AgregarServicio(?, ?, ?, 1)}";
-        
-    
+
         try (
-                java.sql.Connection conn = ConexionBD.obtenerConexion();
-                CallableStatement stmt = (CallableStatement) conn.prepareCall(sql)) {
+                java.sql.Connection conn = ConexionBD.obtenerConexion(); CallableStatement stmt = (CallableStatement) conn.prepareCall(sql)) {
             stmt.setString(1, p_nombre);        // Primer parámetro (String)
             stmt.setString(2, p_descripcion);   // Segundo parámetro (String)
             stmt.setString(3, p_duracion);         // Tercer parámetro (int)
 
-            
             // 2. Ejecutar el procedimiento
             boolean tieneResultados = stmt.execute();
             String mensaje = "No se pudo agregar el servicio, error en el sistema";
@@ -49,20 +71,17 @@ public class RegistrarServicio extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-    
-    
-    public void actualizarServicio(String p_nomServicio,String p_nombre, String p_descripcion, String p_duracion){
-        String sql = "{call ActualizarServicio(?,?, ?, ?, 1, ?)}";
-        
-    
+
+    public void actualizarServicio(String p_nomServicio, String p_nombre, String p_descripcion, String p_duracion) {
+        String sql = "{call ActualizarServicio(?,?, ?, ?, ?)}";
+
         try (
-                java.sql.Connection conn = ConexionBD.obtenerConexion();
-                CallableStatement stmt = (CallableStatement) conn.prepareCall(sql)) {
-            stmt.setString(1, p_nomServicio);        // Primer parámetro (String)
-            stmt.setString(2, p_nombre);        // Primer parámetro (String)
-            stmt.setString(3, p_descripcion);   // Segundo parámetro (String)
-            stmt.setString(4, p_duracion);         // Tercer parámetro (int)
-            stmt.registerOutParameter(p_nombre,Types.LONGNVARCHAR ); // Quinto parámetro (OUT)
+                java.sql.Connection conn = ConexionBD.obtenerConexion(); CallableStatement stmt = (CallableStatement) conn.prepareCall(sql)) {
+            stmt.setString(1, p_nomServicio);
+            stmt.setString(2, p_nombre);
+            stmt.setString(3, p_descripcion);
+            stmt.setString(4, p_duracion);
+            stmt.registerOutParameter(5, Types.LONGNVARCHAR);
 
             stmt.execute();
             String resultado = stmt.getString(5); // Leer parámetro OUT
@@ -73,8 +92,6 @@ public class RegistrarServicio extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-    
-    
 
     public String getBusqueda() {
         return busqueda;
@@ -83,23 +100,36 @@ public class RegistrarServicio extends javax.swing.JFrame {
     public void setBusqueda(String busqueda) {
         this.busqueda = busqueda;
     }
-    
-    
+
     /**
      * Creates new form AgregarServicio
      */
-    public RegistrarServicio() {
-        initComponents();
-        // esto recibe si va a registrar o actualziar, para usar la misma interfaz
-            lblTitulo.setText("REGISTRAR SERVICIO");
+    public void config() {
+        setResizable(false);
+        setSize(400, 370);
+        setLocationRelativeTo(null);
+
     }
-    
-    
-    public RegistrarServicio(String servBuscado) {
+
+    public RegistrarServicio(Servicios padre) {
         initComponents();
+        c=padre;
+        config();
+        // esto recibe si va a registrar o actualziar, para usar la misma interfaz
+        lblTitulo.setText("REGISTRAR SERVICIO");
+    }
+
+    public RegistrarServicio(String servBuscado,Servicios padre) {
+        initComponents();
+        c=padre;
+
+        config();
+
         busqueda = servBuscado;
-            //va a actualizazr los datos, cambiar el lbl 
-            lblTitulo.setText("ACTUALIZAR SERVICIO");
+        //va a actualizazr los datos, cambiar el lbl 
+        lblTitulo.setText("ACTUALIZAR SERVICIO");
+        // debo traerme todos los datos de ese servicio para llenar los jtextfiels
+        cargarServicios(busqueda);
     }
 
     /**
@@ -123,25 +153,48 @@ public class RegistrarServicio extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         btnAceptar = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setAlwaysOnTop(true);
         setPreferredSize(new java.awt.Dimension(989, 369));
+        setResizable(false);
+        getContentPane().setLayout(null);
 
         lblTitulo.setFont(new java.awt.Font("Segoe UI", 3, 24)); // NOI18N
         lblTitulo.setText("REGISTRAR SERVICIO");
+        getContentPane().add(lblTitulo);
+        lblTitulo.setBounds(6, 12, 360, 32);
+        getContentPane().add(txtNom);
+        txtNom.setBounds(6, 78, 361, 37);
 
         jLabel1.setText("NOMBRE");
+        getContentPane().add(jLabel1);
+        jLabel1.setBounds(10, 60, 110, 16);
+        getContentPane().add(txtDesc);
+        txtDesc.setBounds(6, 154, 361, 65);
 
         jLabel2.setText("DESCRIPCION");
+        getContentPane().add(jLabel2);
+        jLabel2.setBounds(10, 130, 90, 16);
 
         jLabel3.setText("DURACIÓN");
+        getContentPane().add(jLabel3);
+        jLabel3.setBounds(10, 230, 70, 16);
 
         jcbHoras.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05" }));
+        getContentPane().add(jcbHoras);
+        jcbHoras.setBounds(10, 260, 72, 22);
 
         jcbMinutos.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "10", "20", "30", "40", "50" }));
+        getContentPane().add(jcbMinutos);
+        jcbMinutos.setBounds(10, 290, 72, 22);
 
         jLabel4.setText("Horas");
+        getContentPane().add(jLabel4);
+        jLabel4.setBounds(100, 260, 80, 16);
 
         jLabel6.setText("Minutos");
+        getContentPane().add(jLabel6);
+        jLabel6.setBounds(100, 290, 44, 16);
 
         btnAceptar.setText("Aceptar");
         btnAceptar.addActionListener(new java.awt.event.ActionListener() {
@@ -149,108 +202,62 @@ public class RegistrarServicio extends javax.swing.JFrame {
                 btnAceptarActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jcbMinutos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel6)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel2)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jcbHoras, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
-                                    .addComponent(jLabel4)
-                                    .addGap(138, 138, 138)
-                                    .addComponent(btnAceptar))
-                                .addComponent(txtDesc)
-                                .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(txtNom))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(53, 53, 53)
-                                .addComponent(lblTitulo, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addComponent(lblTitulo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtNom, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(17, 17, 17)
-                .addComponent(jLabel2)
-                .addGap(13, 13, 13)
-                .addComponent(txtDesc, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(28, 28, 28)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel4)
-                        .addComponent(btnAceptar)
-                        .addComponent(jcbHoras, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addGap(34, 34, 34)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jcbMinutos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6))
-                .addGap(16, 16, 16))
-        );
+        getContentPane().add(btnAceptar);
+        btnAceptar.setBounds(260, 250, 102, 46);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAceptarActionPerformed
         String nombre, descripcion, duracion;
-        
+
         nombre = txtNom.getText();
         descripcion = txtDesc.getText();
-        
-        if(nombre.isBlank() || nombre.isEmpty() || descripcion.isBlank() || descripcion.isEmpty()){
+
+        if (nombre.isBlank() || nombre.isEmpty() || descripcion.isBlank() || descripcion.isEmpty()) {
             JOptionPane.showMessageDialog(this, "NO PUEDE DEJAR CAMPOS VACIOS");
             return;
         }
-        
+
         //validacion de la longitud de los campos
-        if(nombre.length()>30){
+        if (nombre.length() > 30) {
             JOptionPane.showMessageDialog(this, "EL NOMBRE SOLO PUEDE TENER 30 CARACTERES");
             return;
         }
-        
-        if(descripcion.length()>200){
+
+        if (descripcion.length() > 200) {
             JOptionPane.showMessageDialog(this, "DESCRIPCIÓN MUY LARGA, SOLO PUEDE TENER 200 CARACTERES");
             return;
         }
-        
+
         String minutos = jcbMinutos.getSelectedItem().toString();
         String horas = jcbHoras.getSelectedItem().toString();
-        duracion = horas+":"+minutos+":00";
-        
-        if(duracion.equals("00:00:00")){
+        duracion = horas + ":" + minutos + ":00";
+
+        if (duracion.equals("00:00:00")) {
             JOptionPane.showMessageDialog(this, "SELECCIONE UNA DURACIÓN VÁLIDA");
             return;
         }
-        
-        if(!busqueda.isEmpty()){
-        actualizarServicio(busqueda, nombre, descripcion, duracion);
-        return;
+
+        if (!busqueda.isEmpty()) {
+            actualizarServicio(busqueda, nombre, descripcion, duracion);
+            txtDesc.setText("");
+            txtNom.setText("");
+            jcbHoras.setSelectedIndex(0);
+            jcbMinutos.setSelectedIndex(0);
+            c.cargarServiciosEnTabla();
+            this.dispose();
+            return;
         }
         //llamo al método para registrar, en caso de que no se esté buscando algo
         registroServicio(nombre, descripcion, duracion);
 
+        //reestablecer datos
+        txtDesc.setText("");
+        txtNom.setText("");
+        jcbHoras.setSelectedIndex(0);
+        jcbMinutos.setSelectedIndex(0);
+        c.cargarServiciosEnTabla();
     }//GEN-LAST:event_btnAceptarActionPerformed
 
     /**
@@ -284,7 +291,7 @@ public class RegistrarServicio extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new RegistrarServicio().setVisible(true);
+                new RegistrarServicio(new Servicios()).setVisible(true);
             }
         });
     }

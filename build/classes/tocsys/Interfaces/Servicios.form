@@ -8,6 +8,9 @@
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
+  <Events>
+    <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="formMouseClicked"/>
+  </Events>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -30,8 +33,8 @@
                       <Component id="txtBuscar" min="-2" pref="373" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="BTNACTUALIZAR" alignment="0" min="-2" pref="123" max="-2" attributes="0"/>
-                          <Component id="BTNBUSCAR" min="-2" pref="123" max="-2" attributes="0"/>
+                          <Component id="btnActualizar" alignment="0" min="-2" pref="123" max="-2" attributes="0"/>
+                          <Component id="btnBuscar" min="-2" pref="123" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="jScrollPane1" min="-2" pref="611" max="-2" attributes="0"/>
@@ -60,10 +63,10 @@
                       <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="txtBuscar" alignment="3" min="-2" pref="39" max="-2" attributes="0"/>
-                          <Component id="BTNBUSCAR" alignment="3" min="-2" pref="39" max="-2" attributes="0"/>
+                          <Component id="btnBuscar" alignment="3" min="-2" pref="39" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
-                      <Component id="BTNACTUALIZAR" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnActualizar" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jScrollPane1" min="-2" pref="170" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="148" max="-2" attributes="0"/>
@@ -83,8 +86,6 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JTextField" name="txtBuscar">
-    </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
@@ -93,12 +94,14 @@
         <Property name="text" type="java.lang.String" value="SERVICIOS"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="BTNBUSCAR">
+    <Component class="javax.swing.JTextField" name="txtBuscar">
+    </Component>
+    <Component class="javax.swing.JButton" name="btnBuscar">
       <Properties>
         <Property name="text" type="java.lang.String" value="BUSCAR"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BTNBUSCARActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnBuscarActionPerformed"/>
       </Events>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -140,6 +143,9 @@
               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="tblServiciosPropertyChange"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>
@@ -167,12 +173,12 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnEliminarActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="BTNACTUALIZAR">
+    <Component class="javax.swing.JButton" name="btnActualizar">
       <Properties>
         <Property name="text" type="java.lang.String" value="ACTUALIZAR"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BTNACTUALIZARActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnActualizarActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>
