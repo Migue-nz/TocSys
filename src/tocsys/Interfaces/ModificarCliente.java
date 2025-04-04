@@ -55,7 +55,6 @@ public class ModificarCliente extends javax.swing.JFrame {
         String telefono = TXTTELEFONO.getText().trim();
         String correo = TXTCORREO.getText().trim();
 
-<<<<<<< HEAD
         // Validación de campos vacíos
         if (nombre.isEmpty() || apellidos.isEmpty() || telefono.isEmpty() || correo.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(this, "No se permiten campos vacíos.");
@@ -75,9 +74,6 @@ public class ModificarCliente extends javax.swing.JFrame {
         }
 
         // Sentencia SQL
-=======
-        // Crear la sentencia SQL UPDATE
->>>>>>> Productos
         String sql = "UPDATE clientes SET nombre = '" + nombre + "', apellidos = '" + apellidos + "', "
                 + "telefono = '" + telefono + "', correo = '" + correo + "' "
                 + "WHERE idCliente = " + idCliente;
