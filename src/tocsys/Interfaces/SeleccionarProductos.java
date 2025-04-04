@@ -4,18 +4,55 @@
  */
 package tocsys.Interfaces;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.swing.table.DefaultTableModel;
+import tocsys.ConexionBD;
+    
 /**
  *
  * @author Jesus
  */
 public class SeleccionarProductos extends javax.swing.JFrame {
-
+    ActualizarInventario c = new ActualizarInventario();
+    DefaultTableModel m;
     /**
      * Creates new form SeleccionarProductos
      */
     public SeleccionarProductos() {
         initComponents();
         setSize(801, 456);
+        m = (DefaultTableModel)tblInventario.getModel();    
+        cargarInventarioEnTabla();
+
+        
+        
+    }
+    
+    public void cargarInventarioEnTabla() {
+        m.setRowCount(0); // Limpiar la tabla antes de cargar
+
+        String sql = "call MostrarInventario();";
+
+        try (Connection conn = ConexionBD.obtenerConexion(); Statement stmt = conn.createStatement(); ResultSet rs
+                = stmt.executeQuery(
+                        sql)) 
+        {while (rs.next()) {
+                m.addRow(new Object[]{
+                    (rs.getString("nombre")+" ("+rs.getString("marca")+")"),
+                    
+                    rs.getString("cantidad"),
+                    rs.getString("caducidad"),
+                        });
+            }
+
+            tblInventario.setModel(m);
+        } catch (SQLException e) {
+            System.out.println("Error al cargar inventario: " + e.getMessage());
+        }
     }
 
     /**
@@ -30,7 +67,7 @@ public class SeleccionarProductos extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
+        tblInventario = new javax.swing.JTable();
         jTextField1 = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
@@ -61,28 +98,32 @@ public class SeleccionarProductos extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTable1);
 
         getContentPane().add(jScrollPane1);
-        jScrollPane1.setBounds(320, 100, 390, 300);
+        jScrollPane1.setBounds(360, 100, 390, 300);
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        tblInventario.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Nombre", "Marca", "Existencia"
+                "Nombre", "Uds.", "Caducidad"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, true, false
+                false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane2.setViewportView(jTable2);
+        jScrollPane2.setViewportView(tblInventario);
+        if (tblInventario.getColumnModel().getColumnCount() > 0) {
+            tblInventario.getColumnModel().getColumn(1).setMaxWidth(40);
+            tblInventario.getColumnModel().getColumn(2).setMaxWidth(80);
+        }
 
         getContentPane().add(jScrollPane2);
-        jScrollPane2.setBounds(10, 100, 290, 300);
+        jScrollPane2.setBounds(10, 100, 340, 300);
 
         jTextField1.setText("Buscar");
         getContentPane().add(jTextField1);
@@ -95,7 +136,7 @@ public class SeleccionarProductos extends javax.swing.JFrame {
 
         jLabel2.setText("Productos seleccionados");
         getContentPane().add(jLabel2);
-        jLabel2.setBounds(320, 70, 190, 16);
+        jLabel2.setBounds(360, 70, 150, 16);
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 3, 24)); // NOI18N
         jLabel5.setText("SELECCIONAR PRODUCTOS");
@@ -105,7 +146,7 @@ public class SeleccionarProductos extends javax.swing.JFrame {
         jButton2.setText("Aceptar");
         jButton2.setEnabled(false);
         getContentPane().add(jButton2);
-        jButton2.setBounds(470, 70, 100, 23);
+        jButton2.setBounds(520, 70, 100, 23);
 
         jButton3.setText("Devolver");
         jButton3.setEnabled(false);
@@ -115,7 +156,7 @@ public class SeleccionarProductos extends javax.swing.JFrame {
             }
         });
         getContentPane().add(jButton3);
-        jButton3.setBounds(590, 70, 110, 23);
+        jButton3.setBounds(640, 70, 110, 23);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -168,7 +209,7 @@ public class SeleccionarProductos extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTable jTable2;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JTable tblInventario;
     // End of variables declaration//GEN-END:variables
 }

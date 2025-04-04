@@ -26,6 +26,8 @@ import tocsys.ConexionBD;
 public class AgregarCitas extends javax.swing.JFrame {
   // private  List<String> idhor = new ArrayList<>();
     String JSON = "";
+    DefaultTableModel modelo = new DefaultTableModel();
+
     
     //Para eliminar cita, capturo sus productos en un archivo JSON y por cada uno, uso el metodo de gestionarInventario
     
@@ -33,9 +35,29 @@ public class AgregarCitas extends javax.swing.JFrame {
     public AgregarCitas() {
         initComponents();
         setSize(800, 440);
+        Cliente c = new Cliente();
+        modelo = (DefaultTableModel)tblClientes.getModel();
+        cargarClientes();
+        
     }
     
-    
+    public void cargarClientes(){
+        modelo.setRowCount(0);
+        try (Connection conn = ConexionBD.obtenerConexion(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT idCliente, nombre, apellidos, telefono, correo FROM clientes")) {
+
+            while (rs.next()) {
+                modelo.addRow(new Object[]{
+                    (rs.getString("nombre")+rs.getString("apellidos")),
+                    rs.getString("telefono"),
+                });
+            }
+
+            tblClientes.setModel(modelo);
+
+        } catch (Exception e) {
+            System.out.println("Error al cargar clientes: " + e.getMessage());
+        }
+    }
     private Date obtenerFechaValidada() {
     Date fechaSeleccionada = fecha.getDate();
     
@@ -102,7 +124,7 @@ public class AgregarCitas extends javax.swing.JFrame {
         jComboBox1 = new javax.swing.JComboBox<>();
         jComboBox2 = new javax.swing.JComboBox<>();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblClientes = new javax.swing.JTable();
         jTextField1 = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jComboBox3 = new javax.swing.JComboBox<>();
@@ -140,7 +162,7 @@ public class AgregarCitas extends javax.swing.JFrame {
         getContentPane().add(jComboBox2);
         jComboBox2.setBounds(570, 320, 72, 22);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblClientes.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -156,7 +178,7 @@ public class AgregarCitas extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane3.setViewportView(jTable1);
+        jScrollPane3.setViewportView(tblClientes);
 
         getContentPane().add(jScrollPane3);
         jScrollPane3.setBounds(20, 70, 390, 210);
@@ -196,6 +218,11 @@ public class AgregarCitas extends javax.swing.JFrame {
         jLabel2.setBounds(430, 290, 110, 16);
 
         jButton1.setText("Seleccionar productos");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
         getContentPane().add(jButton1);
         jButton1.setBounds(190, 350, 150, 23);
 
@@ -225,6 +252,11 @@ public class AgregarCitas extends javax.swing.JFrame {
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        SeleccionarProductos c = new SeleccionarProductos();
+        c.setVisible(true);
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -278,7 +310,7 @@ public class AgregarCitas extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JTable tblClientes;
     // End of variables declaration//GEN-END:variables
 }
