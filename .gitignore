@@ -1,0 +1,10 @@
+
+/build/
+/target/
+*.class
+*.jar
+*.war
+
+
+/nbproject/private/
+/.idea/
